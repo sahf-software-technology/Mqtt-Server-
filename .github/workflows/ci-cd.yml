@@ -59,10 +59,10 @@ jobs:
             mkdir -p $DEPLOY_PATH
             
             # 2. Upload the deployment script to a dedicated path
-            # FIX: We use the local file path 'deployment/deploy.sh' on the runner.
-            # This is now confirmed to be correct based on your repository structure.
+            # FIX: Using the explicit GITHUB_WORKSPACE environment variable to guarantee the path
+            # This ensures the cat command finds the file regardless of the runner's working directory.
             cat <<EOF > $DEPLOY_PATH/deploy.sh
-            $(cat deployment/deploy.sh)
+            $(cat ${{ github.workspace }}/deployment/deploy.sh)
             EOF
             chmod +x $DEPLOY_PATH/deploy.sh
             
