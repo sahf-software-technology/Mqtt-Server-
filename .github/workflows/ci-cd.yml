@@ -1,0 +1,65 @@
+name: Build, Push, and Deploy REST API
+
+on:
+  push:
+    branches:
+      - main # Trigger on pushes to the main branch
+
+env:
+  # Define the image name using GHCR convention
+  IMAGE_NAME: rest-api-layer
+  REGISTRY: ghcr.io
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    # Needs to read secrets for VPS deployment
+    permissions:
+      contents: read
+      packages: write 
+      
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      # --- CI: Build and Push to GHCR ---
+      
+      - name: 🔑 Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔨 Build and push Docker image
+        id: docker_build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: \${{ env.REGISTRY }}/\${{ github.repository_owner }}/\${{ env.IMAGE_NAME }}:latest, \${{ env.REGISTRY }}/\${{ github.repository_owner }}/\${{ env.IMAGE_NAME }}:\${{ github.sha }}
+          file: ./Dockerfile
+          # Use SHA as the stable tag and 'latest' for convenience
+      
+      # --- CD: Deploy to VPS via SSH ---
+      
+      - name: ⚙️ Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.1
+        with:
+          host: \${{ secrets.VPS_HOST }}
+          username: \${{ secrets.VPS_USER }}
+          key: \${{ secrets.SSH_PRIVATE_KEY }}
+          # The deployment script is run once.
+          script: |
+            # 1. Create deployment directory if it doesn't exist (redundant, but safe)
+            mkdir -p /opt/stylesearch/deployment
+            
+            # 2. Upload the deployment script
+            cat <<EOF > /opt/stylesearch/deployment/deploy.sh
+            \$(cat deployment/deploy.sh)
+            EOF
+            chmod +x /opt/stylesearch/deployment/deploy.sh
+            
+            # 3. Execute the deployment script, passing the full Git SHA as the image tag
+            /opt/stylesearch/deployment/deploy.sh \${{ github.sha }}
