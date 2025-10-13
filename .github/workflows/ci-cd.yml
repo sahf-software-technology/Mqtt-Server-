@@ -43,6 +43,16 @@ jobs:
       
       # --- CD: Deploy to VPS via SSH ---
       
+      - name: 📤 Transfer deployment script to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "deployment/deploy.sh"
+          target: "/opt/dapr-deployments/"
+          strip_components: 1
+      
       - name: ⚙️ Deploy to VPS via SSH
         uses: appleboy/ssh-action@v1.0.1
         with:
@@ -50,26 +60,20 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # FIX: Navigate to the workspace on the runner for guaranteed path resolution
-            # This makes the subsequent 'cat' command work relative to the repository root.
-            cd ${{ github.workspace }}
-            
-            # Define the application deployment directory
+            # Define paths on VPS
             APP_DIR="/root/Mqtt"
             DEPLOY_PATH="/opt/dapr-deployments"
             
-            # Create deployment directories
-            mkdir -p $APP_DIR
+            # Ensure deployment directory exists
             mkdir -p $DEPLOY_PATH
             
-            # 2. Upload the deployment script to a dedicated path
-            # The path is now simple 'deployment/deploy.sh' because we changed directories above
-            cat <<EOF > $DEPLOY_PATH/deploy.sh
-            $(cat deployment/deploy.sh)
-            EOF
+            # Make script executable
             chmod +x $DEPLOY_PATH/deploy.sh
             
-            # 3. Execute the deployment script on a single line for robust parsing
-            /opt/dapr-deployments/deploy.sh \
+            # Login to GHCR on VPS
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+            
+            # Execute deployment script
+            $DEPLOY_PATH/deploy.sh \
               ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
               $APP_DIR
