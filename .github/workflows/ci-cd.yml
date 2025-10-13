@@ -50,6 +50,10 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            # FIX: Navigate to the workspace on the runner for guaranteed path resolution
+            # This makes the subsequent 'cat' command work relative to the repository root.
+            cd ${{ github.workspace }}
+            
             # Define the application deployment directory
             APP_DIR="/root/Mqtt"
             DEPLOY_PATH="/opt/dapr-deployments"
@@ -59,14 +63,13 @@ jobs:
             mkdir -p $DEPLOY_PATH
             
             # 2. Upload the deployment script to a dedicated path
-            # FIX: Using the explicit GITHUB_WORKSPACE environment variable to guarantee the path
-            # This ensures the cat command finds the file regardless of the runner's working directory.
+            # The path is now simple 'deployment/deploy.sh' because we changed directories above
             cat <<EOF > $DEPLOY_PATH/deploy.sh
-            $(cat ${{ github.workspace }}/deployment/deploy.sh)
+            $(cat deployment/deploy.sh)
             EOF
             chmod +x $DEPLOY_PATH/deploy.sh
             
             # 3. Execute the deployment script on a single line for robust parsing
-            $DEPLOY_PATH/deploy.sh \
+            /opt/dapr-deployments/deploy.sh \
               ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
               $APP_DIR
