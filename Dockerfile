@@ -2,19 +2,21 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy csproj and restore dependencies first (for layer caching)
-# We copy it into a path structure that mirrors the source directory
-COPY src/RestApiLayer/*.csproj src/RestApiLayer/
+# FIX 1: Copy the single project file into the expected build directory first
+# This ensures caching works and the file is definitely present.
+COPY src/RestApiLayer/RestApiLayer.csproj src/RestApiLayer/
+
+# Restore dependencies - use the full path from /src
 RUN dotnet restore src/RestApiLayer/RestApiLayer.csproj
 
-# Copy the rest of the source code
+# Copy the rest of the source code (this line is correctly copying from the repo to the container)
 COPY src/RestApiLayer/. src/RestApiLayer/
 
-# Change directory to the folder containing the project file
-WORKDIR /src/RestApiLayer
+# NOTE: We keep WORKDIR at /src to use consistent full paths below, removing ambiguity.
 
-# FIX: Explicitly specify the project file to publish (RestApiLayer.csproj)
-RUN dotnet publish RestApiLayer.csproj -c Release -o /app/publish
+# FIX 2: Use the full path for the publish command
+# This resolves path ambiguity by explicitly telling dotnet where the project is.
+RUN dotnet publish src/RestApiLayer/RestApiLayer.csproj -c Release -o /app/publish
 
 # Stage 2: Create the final runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
