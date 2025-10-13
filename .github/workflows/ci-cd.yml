@@ -38,28 +38,39 @@ jobs:
         with:
           context: .
           push: true
-          tags: \${{ env.REGISTRY }}/\${{ github.repository_owner }}/\${{ env.IMAGE_NAME }}:latest, \${{ env.REGISTRY }}/\${{ github.repository_owner }}/\${{ env.IMAGE_NAME }}:\${{ github.sha }}
+          # FIX: Removed backslashes (\)
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest, ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           file: ./Dockerfile
-          # Use SHA as the stable tag and 'latest' for convenience
       
       # --- CD: Deploy to VPS via SSH ---
       
       - name: ⚙️ Deploy to VPS via SSH
         uses: appleboy/ssh-action@v1.0.1
         with:
-          host: \${{ secrets.VPS_HOST }}
-          username: \${{ secrets.VPS_USER }}
-          key: \${{ secrets.SSH_PRIVATE_KEY }}
+          # FIX: Removed backslashes (\)
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           # The deployment script is run once.
           script: |
-            # 1. Create deployment directory if it doesn't exist (redundant, but safe)
-            mkdir -p /opt/stylesearch/deployment
+            # 1. Define the application deployment directory
+            APP_DIR="/root/Mqtt"
+            DEPLOY_PATH="/opt/dapr-deployments"
             
-            # 2. Upload the deployment script
-            cat <<EOF > /opt/stylesearch/deployment/deploy.sh
-            \$(cat deployment/deploy.sh)
+            # Create deployment directories
+            mkdir -p $APP_DIR
+            mkdir -p $DEPLOY_PATH
+            
+            # 2. Upload the deployment script to a dedicated path
+            # FIX: Removed backslash (\) before the $(cat...) command substitution
+            cat <<EOF > $DEPLOY_PATH/deploy.sh
+            $(cat deployment/deploy.sh)
             EOF
-            chmod +x /opt/stylesearch/deployment/deploy.sh
+            chmod +x $DEPLOY_PATH/deploy.sh
             
-            # 3. Execute the deployment script, passing the full Git SHA as the image tag
-            /opt/stylesearch/deployment/deploy.sh \${{ github.sha }}
+            # 3. Execute the deployment script, passing the full image tag
+            # FIX: Removed backslash (\) before ${{...}}
+            # We also pass the application directory as the second argument if deploy.sh needs it
+            $DEPLOY_PATH/deploy.sh \
+              ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+              $APP_DIR
