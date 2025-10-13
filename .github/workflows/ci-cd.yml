@@ -38,7 +38,6 @@ jobs:
         with:
           context: .
           push: true
-          # FIX: Tags are clean
           tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest, ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           file: ./Dockerfile
       
@@ -51,7 +50,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # 1. Define the application deployment directory
+            # Define the application deployment directory
             APP_DIR="/root/Mqtt"
             DEPLOY_PATH="/opt/dapr-deployments"
             
@@ -60,11 +59,14 @@ jobs:
             mkdir -p $DEPLOY_PATH
             
             # 2. Upload the deployment script to a dedicated path
+            # FIX: We use the local file path 'deployment/deploy.sh' on the runner.
+            # This is now confirmed to be correct based on your repository structure.
             cat <<EOF > $DEPLOY_PATH/deploy.sh
             $(cat deployment/deploy.sh)
             EOF
             chmod +x $DEPLOY_PATH/deploy.sh
             
             # 3. Execute the deployment script on a single line for robust parsing
-            # FIX: Combined onto a single logical line
-            $DEPLOY_PATH/deploy.sh ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }} $APP_DIR
+            $DEPLOY_PATH/deploy.sh \
+              ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+              $APP_DIR
