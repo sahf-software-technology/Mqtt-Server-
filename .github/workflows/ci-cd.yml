@@ -38,7 +38,7 @@ jobs:
         with:
           context: .
           push: true
-          # FIX: Removed backslashes (\)
+          # FIX: Tags are clean
           tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest, ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           file: ./Dockerfile
       
@@ -47,11 +47,9 @@ jobs:
       - name: ⚙️ Deploy to VPS via SSH
         uses: appleboy/ssh-action@v1.0.1
         with:
-          # FIX: Removed backslashes (\)
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # The deployment script is run once.
           script: |
             # 1. Define the application deployment directory
             APP_DIR="/root/Mqtt"
@@ -62,15 +60,11 @@ jobs:
             mkdir -p $DEPLOY_PATH
             
             # 2. Upload the deployment script to a dedicated path
-            # FIX: Removed backslash (\) before the $(cat...) command substitution
             cat <<EOF > $DEPLOY_PATH/deploy.sh
             $(cat deployment/deploy.sh)
             EOF
             chmod +x $DEPLOY_PATH/deploy.sh
             
-            # 3. Execute the deployment script, passing the full image tag
-            # FIX: Removed backslash (\) before ${{...}}
-            # We also pass the application directory as the second argument if deploy.sh needs it
-            $DEPLOY_PATH/deploy.sh \
-              ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
-              $APP_DIR
+            # 3. Execute the deployment script on a single line for robust parsing
+            # FIX: Combined onto a single logical line
+            $DEPLOY_PATH/deploy.sh ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }} $APP_DIR
