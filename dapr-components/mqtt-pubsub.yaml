@@ -7,7 +7,7 @@ spec:
   version: v1
   metadata:
   - name: url
-    value: "tcp://localhost:1883"
+    value: "tcp://mosquitto:1883"
   - name: consumerID
     value: "{appID}"
   - name: qos
