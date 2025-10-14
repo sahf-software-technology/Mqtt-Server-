@@ -1,32 +1,49 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-// This adds the DaprClient and other services needed for Dapr integration.
+// Add Dapr integration to controllers
 builder.Services.AddControllers().AddDapr();
 
-// Add Swagger/OpenAPI for easy testing if you like
+// Add Swagger/OpenAPI for easy testing
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() 
+    { 
+        Title = "IoT REST API with MQTT", 
+        Version = "v1",
+        Description = "REST API for IoT device management using Dapr and MQTT"
+    });
+});
+
+// Register Dapr client
+builder.Services.AddDaprClient();
+
+// Add CORS if you need it for a frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Always enable Swagger (useful for testing)
+app.UseSwagger();
+app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
+app.UseCors("AllowAll");
 
-// This middleware is required for Dapr to wrap messages in the CloudEvents format.
+// Required for Dapr pub/sub (CloudEvents format)
 app.UseCloudEvents();
 
+// Map your controllers
 app.MapControllers();
 
-// This endpoint is used by the Dapr sidecar to discover which topics to subscribe to.
-// It scans for the [Topic] attributes in your controllers.
+// Required for Dapr to discover topic subscriptions
 app.MapSubscribeHandler();
 
 app.Run();

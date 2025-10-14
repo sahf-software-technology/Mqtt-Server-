@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RestApiLayer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+86281dd406074d66eeab94292e5b955f4e551bcc")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+938ee9f5698e757ec0fa37e61722a4f224537cd7")]
 [assembly: System.Reflection.AssemblyProductAttribute("RestApiLayer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RestApiLayer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
