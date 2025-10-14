@@ -88,8 +88,7 @@ else
     exit 1
 fi
 
-# 6. Start Dapr sidecar
-# Uses the custom network. Dapr will now resolve "mosquitto" to the correct container IP.
+# 6. Start Dapr sidecar (CRITICAL FIX APPLIED: Removed './' before 'daprd')
 echo "Starting Dapr sidecar..."
 docker run -d \
   --name ${DAPRD_CONTAINER_NAME} \
@@ -97,7 +96,7 @@ docker run -d \
   --restart unless-stopped \
   -v ${DAPR_COMPONENTS_PATH}:/components \
   daprio/daprd:1.16.1 \
-  ./daprd \
+  daprd \
   --app-id ${APP_ID} \
   --app-port ${APP_PORT} \
   --dapr-http-port ${DAPR_HTTP_PORT} \
@@ -124,7 +123,12 @@ if docker ps | grep -q "$CONTAINER_NAME" && docker ps | grep -q "$DAPRD_CONTAINE
     docker ps | grep "$MOSQUITTO_NAME"
     echo ""
     echo "Dapr Sidecar Container:"
-    docker ps | grep "$DAPRD_CONTAINER_NAME"
+    # Check logs for dapr sidecar to ensure it is stable and connected
+    if docker logs "$DAPRD_CONTAINER_NAME" 2>&1 | grep -q "Initialized pubsub mqtt-pubsub"; then
+        echo "✅ Dapr Sidecar is STABLE and MQTT component initialized successfully."
+    else
+        echo "⚠️ Dapr Sidecar is running but connection status is unknown. Please check logs manually."
+    fi
 else
     echo "❌ One or more containers failed to start"
     echo "Check logs for mosquitto, ${CONTAINER_NAME}, and ${DAPRD_CONTAINER_NAME}"
