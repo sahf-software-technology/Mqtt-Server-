@@ -24,7 +24,7 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 # The application runs on port 8080 inside the container
-ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_URLS=http://0.0.0.0:8080
 EXPOSE 8080
 
 ENTRYPOINT ["dotnet", "RestApiLayer.dll"]

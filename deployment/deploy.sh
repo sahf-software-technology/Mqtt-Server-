@@ -86,7 +86,7 @@ echo "Starting application container..."
 docker run -d \
   --name ${CONTAINER_NAME} \
   --network $NETWORK_NAME \
-  -e ASPNETCORE_URLS="http://+:${APP_PORT}" \
+  -e ASPNETCORE_URLS="http://0.0.0.0:${APP_PORT}" \
   --restart unless-stopped \
   ${IMAGE_TAG_AND_REPO}
 

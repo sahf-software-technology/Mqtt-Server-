@@ -1,0 +1,70 @@
+time="2025-10-14T09:22:23.975918735Z" level=info msg="Starting Dapr Runtime -- version 1.16.1 -- commit 133e3847acd3bba2f0a22f9e82af25ef6a63f5a3" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.976016381Z" level=info msg="Log level set to: info" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.977302572Z" level=warning msg="mTLS is disabled. Skipping certificate request and tls validation" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.security type=log ver=1.16.1
+time="2025-10-14T09:22:23.978498308Z" level=info msg="loading default configuration" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.978569594Z" level=info msg="Enabled features: SchedulerReminders" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.978706448Z" level=info msg="metric spec: {\"enabled\":true}" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.diagnostics type=log ver=1.16.1
+time="2025-10-14T09:22:23.978784284Z" level=info msg="Using default latency distribution buckets: [1 2 3 4 5 6 8 10 13 16 20 25 30 40 50 65 80 100 130 160 200 250 300 400 500 650 800 1000 2000 5000 10000 20000 50000 100000]" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.diagnostics type=log ver=1.16.1
+time="2025-10-14T09:22:23.979689537Z" level=warning msg="The default value for 'spec.metric.http.increasedCardinality' will change to 'false' in Dapr 1.15 or later" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.diagnostics type=log ver=1.16.1
+time="2025-10-14T09:22:23.980250655Z" level=warning msg="Actor runtime disabled: api error: code = Unavailable desc = placement service is not configured. Actors and Workflow APIs will be unavailable" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.actor type=log ver=1.16.1
+time="2025-10-14T09:22:23.980730281Z" level=info msg="metrics server started on 0.0.0.0:9090/" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.981728702Z" level=info msg="Actor runtime disabled: api error: code = Unavailable desc = placement service is not configured" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.actor type=log ver=1.16.1
+time="2025-10-14T09:22:23.981830575Z" level=info msg="standalone mode configured" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.981855411Z" level=info msg="app id: rest-api-layer" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.982033838Z" level=info msg="Dapr trace sampler initialized: ParentBased{root:TraceIDRatioBased{0.0001},remoteParentSampled:AlwaysOnSampler,remoteParentNotSampled:AlwaysOffSampler,localParentSampled:AlwaysOnSampler,localParentNotSampled:AlwaysOffSampler}" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.982440606Z" level=info msg="local service entry announced: rest-api-layer -> 172.18.0.4:47768" app_id=rest-api-layer component="nr (mdns/v1)" instance=2bf1f9bc350e scope=dapr.contrib type=log ver=1.16.1
+time="2025-10-14T09:22:23.98249782Z" level=info msg="Initialized name resolution to mdns" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.982649176Z" level=info msg="Loading components…" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.984113704Z" level=info msg="Waiting for all outstanding components to be processed…" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.984443336Z" level=warning msg="No scheduler host addresses provided. Scheduler disabled" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.scheduler.watchhosts type=log ver=1.16.1
+time="2025-10-14T09:22:23.987887489Z" level=info msg="Component loaded: mqtt-pubsub (pubsub.mqtt3/v1)" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.processor type=log ver=1.16.1
+time="2025-10-14T09:22:23.987951135Z" level=info msg="All outstanding components processed" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.987977084Z" level=info msg="Loading endpoints…" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.988185875Z" level=info msg="Waiting for all outstanding http endpoints to be processed…" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.988202791Z" level=info msg="All outstanding http endpoints processed" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.988224814Z" level=info msg="Loading Declarative Subscriptions…" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.988519684Z" level=info msg="gRPC server listening on TCP address: :50001" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.grpc.api type=log ver=1.16.1
+time="2025-10-14T09:22:23.988538592Z" level=info msg="Enabled gRPC tracing middleware" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.grpc.api type=log ver=1.16.1
+time="2025-10-14T09:22:23.988543409Z" level=info msg="Enabled gRPC metrics middleware" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.grpc.api type=log ver=1.16.1
+time="2025-10-14T09:22:23.988647194Z" level=info msg="Registering workflow engine for gRPC endpoint: [::]:50001" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.grpc.api type=log ver=1.16.1
+time="2025-10-14T09:22:23.988693363Z" level=info msg="API gRPC server is running on port 50001" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.988743549Z" level=warning msg="The default value for 'spec.metric.http.increasedCardinality' will change to 'false' in Dapr 1.15 or later" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.http type=log ver=1.16.1
+time="2025-10-14T09:22:23.9888117Z" level=info msg="Enabled max body size HTTP middleware with size 4194304 bytes" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.http type=log ver=1.16.1
+time="2025-10-14T09:22:23.988817409Z" level=info msg="Enabled tracing HTTP middleware" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.http type=log ver=1.16.1
+time="2025-10-14T09:22:23.988821765Z" level=info msg="Enabled metrics HTTP middleware" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.http type=log ver=1.16.1
+time="2025-10-14T09:22:23.989088053Z" level=info msg="HTTP server listening on TCP address: :3500" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.http type=log ver=1.16.1
+time="2025-10-14T09:22:23.989106661Z" level=info msg="HTTP server is running on port 3500" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.989111508Z" level=info msg="The request body size parameter is: 4194304 bytes" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.989141883Z" level=info msg="gRPC server listening on TCP address: :47768" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.grpc.internal type=log ver=1.16.1
+time="2025-10-14T09:22:23.989148303Z" level=info msg="Enabled gRPC tracing middleware" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.grpc.internal type=log ver=1.16.1
+time="2025-10-14T09:22:23.989152209Z" level=info msg="Enabled gRPC metrics middleware" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime.grpc.internal type=log ver=1.16.1
+time="2025-10-14T09:22:23.989177135Z" level=info msg="Internal gRPC server is running on :47768" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:23.989185698Z" level=info msg="application protocol: http. waiting on port 8080.  This will block until the app is listening on that port." app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:34.045744084Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:44.104284139Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:22:54.161768453Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:23:04.221064604Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:23:14.277233549Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:23:24.334813457Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:23:34.391523846Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:23:44.449395305Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:23:54.518594866Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:24:04.574932151Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:24:14.630270726Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:24:24.686759756Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:24:34.740845161Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:24:44.795770863Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:24:54.848513251Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:25:04.911555626Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:25:14.966988322Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:25:25.020321164Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:25:35.076260316Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:25:45.131430114Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:25:55.186100951Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:26:05.244476586Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:26:15.300405094Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:26:25.353924544Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:26:35.409992446Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:26:45.466525527Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:26:55.521070517Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
+time="2025-10-14T09:27:05.57476964Z" level=info msg="waiting for application to listen on port 8080" app_id=rest-api-layer instance=2bf1f9bc350e scope=dapr.runtime type=log ver=1.16.1
