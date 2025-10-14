@@ -88,7 +88,7 @@ else
     exit 1
 fi
 
-# 6. Start Dapr sidecar (CRITICAL FIX APPLIED: Removed './' before 'daprd')
+# 6. Start Dapr sidecar (CRITICAL FIX APPLIED: Using ABSOLUTE PATH /daprd)
 echo "Starting Dapr sidecar..."
 docker run -d \
   --name ${DAPRD_CONTAINER_NAME} \
@@ -96,7 +96,7 @@ docker run -d \
   --restart unless-stopped \
   -v ${DAPR_COMPONENTS_PATH}:/components \
   daprio/daprd:1.16.1 \
-  daprd \
+  /daprd \
   --app-id ${APP_ID} \
   --app-port ${APP_PORT} \
   --dapr-http-port ${DAPR_HTTP_PORT} \
