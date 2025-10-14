@@ -19,6 +19,7 @@ NETWORK_NAME="dapr-network"
 MOSQUITTO_NAME="mosquitto"
 MOSQUITTO_PORT=1883
 DAPR_COMPONENTS_PATH="${APP_DIR}/dapr-components" # Assumes components are here
+MOSQUITTO_CONFIG_PATH="${APP_DIR}/mosquitto-config" # New path for Mosquitto config
 
 echo "=========================================="
 echo "Starting robust Dapr deployment..."
@@ -27,10 +28,18 @@ echo "Image: ${IMAGE_TAG_AND_REPO}"
 echo "Network: ${NETWORK_NAME}"
 echo "=========================================="
 
-# 1. Setup Dapr Components Directory and Network
+# 1. Setup Dapr Components Directory, Mosquitto Config, and Network
 echo "Creating Dapr components path and shared network..."
 mkdir -p "$DAPR_COMPONENTS_PATH"
 echo "✅ Dapr components path created at: $DAPR_COMPONENTS_PATH"
+
+# Setup Mosquitto Config Path
+echo "Creating Mosquitto config path and minimal config file..."
+mkdir -p "$MOSQUITTO_CONFIG_PATH"
+
+# Create a minimal config file to force Mosquitto to listen on all interfaces (0.0.0.0)
+echo -e "listener ${MOSQUITTO_PORT} 0.0.0.0\nallow_anonymous true" > "$MOSQUITTO_CONFIG_PATH/mosquitto.conf"
+echo "✅ Mosquitto config created, binding to 0.0.0.0"
 
 # Create a custom bridge network for internal service discovery (mosquitto, app, sidecar)
 docker network create $NETWORK_NAME 2>/dev/null || true 
@@ -55,13 +64,13 @@ else
     exit 1
 fi
 
-# 4. Start Mosquitto Broker (The Dapr Dependency)
-# Maps port 1883 externally for MQTT Explorer and attaches to the custom network for Dapr.
-echo "Starting Mosquitto container..."
+# 4. Start Mosquitto Broker (CRITICAL FIX APPLIED: Mounting config to force 0.0.0.0 listener)
+echo "Starting Mosquitto container with fixed listener..."
 docker run -d \
     --name $MOSQUITTO_NAME \
     --network $NETWORK_NAME \
     -p ${MOSQUITTO_PORT}:${MOSQUITTO_PORT} \
+    -v ${MOSQUITTO_CONFIG_PATH}/mosquitto.conf:/mosquitto/config/mosquitto.conf \
     --restart unless-stopped \
     eclipse-mosquitto
 
@@ -88,7 +97,7 @@ else
     exit 1
 fi
 
-# 6. Start Dapr sidecar (CRITICAL FIX APPLIED: Using ABSOLUTE PATH /daprd)
+# 6. Start Dapr sidecar (Using ABSOLUTE PATH /daprd)
 echo "Starting Dapr sidecar..."
 docker run -d \
   --name ${DAPRD_CONTAINER_NAME} \
@@ -127,7 +136,7 @@ if docker ps | grep -q "$CONTAINER_NAME" && docker ps | grep -q "$DAPRD_CONTAINE
     if docker logs "$DAPRD_CONTAINER_NAME" 2>&1 | grep -q "Initialized pubsub mqtt-pubsub"; then
         echo "✅ Dapr Sidecar is STABLE and MQTT component initialized successfully."
     else
-        echo "⚠️ Dapr Sidecar is running but connection status is unknown. Please check logs manually."
+        echo "⚠️ Dapr Sidecar is running but connection status is unknown. Please check logs manually for 'dapr-rest-api-layer'."
     fi
 else
     echo "❌ One or more containers failed to start"
