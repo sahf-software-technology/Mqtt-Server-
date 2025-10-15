@@ -86,7 +86,6 @@ echo "Starting application container..."
 docker run -d \
   --name ${CONTAINER_NAME} \
   --network $NETWORK_NAME \
-  --network-alias ${APP_ID} \
   -e ASPNETCORE_URLS="http://+:${APP_PORT}" \
   --restart unless-stopped \
   ${IMAGE_TAG_AND_REPO}
@@ -98,18 +97,16 @@ else
     exit 1
 fi
 
-# 6. Start Dapr sidecar (Using ABSOLUTE PATH /daprd)
-echo "Starting Dapr sidecar..."
+# 6. Start Dapr sidecar using app container's network
+echo "Starting Dapr sidecar (network mode: container)..."
 docker run -d \
   --name ${DAPRD_CONTAINER_NAME} \
-  --network $NETWORK_NAME \
+  --network container:${CONTAINER_NAME} \
   --restart unless-stopped \
   -v ${DAPR_COMPONENTS_PATH}:/components \
   daprio/daprd:1.16.1 \
   /daprd \
   --app-id ${APP_ID} \
-  --app-protocol http \
-  --app-address ${APP_ID} \
   --app-port ${APP_PORT} \
   --dapr-http-port ${DAPR_HTTP_PORT} \
   --dapr-grpc-port ${DAPR_GRPC_PORT} \
