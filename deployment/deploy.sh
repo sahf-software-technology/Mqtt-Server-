@@ -86,7 +86,8 @@ echo "Starting application container..."
 docker run -d \
   --name ${CONTAINER_NAME} \
   --network $NETWORK_NAME \
-  -e ASPNETCORE_URLS="http://0.0.0.0:${APP_PORT}" \
+  --network-alias ${APP_ID} \
+  -e ASPNETCORE_URLS="http://+:${APP_PORT}" \
   --restart unless-stopped \
   ${IMAGE_TAG_AND_REPO}
 
@@ -107,12 +108,14 @@ docker run -d \
   daprio/daprd:1.16.1 \
   /daprd \
   --app-id ${APP_ID} \
+  --app-protocol http \
+  --app-address ${APP_ID} \
   --app-port ${APP_PORT} \
   --dapr-http-port ${DAPR_HTTP_PORT} \
   --dapr-grpc-port ${DAPR_GRPC_PORT} \
   --resources-path /components \
   --log-level info
-
+  
 if [ $? -eq 0 ]; then
     echo "✅ Dapr sidecar started"
 else
