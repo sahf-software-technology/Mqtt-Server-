@@ -81,11 +81,14 @@ else
     exit 1
 fi
 
-# 5. Start the application container
+# 5. Start the application container with ports exposed
 echo "Starting application container..."
 docker run -d \
   --name ${CONTAINER_NAME} \
   --network $NETWORK_NAME \
+  -p ${APP_PORT}:${APP_PORT} \
+  -p ${DAPR_HTTP_PORT}:${DAPR_HTTP_PORT} \
+  -p ${DAPR_GRPC_PORT}:${DAPR_GRPC_PORT} \
   -e ASPNETCORE_URLS="http://+:${APP_PORT}" \
   --restart unless-stopped \
   ${IMAGE_TAG_AND_REPO}
@@ -97,7 +100,7 @@ else
     exit 1
 fi
 
-# 6. Start Dapr sidecar using app container's network
+# 6. Start Dapr sidecar using app container's network (ports inherited)
 echo "Starting Dapr sidecar (network mode: container)..."
 docker run -d \
   --name ${DAPRD_CONTAINER_NAME} \
