@@ -16,3 +16,6 @@ spec:
     value: "false"
   - name: cleanSession
     value: "true"
+  - name: rawPayload
+    value: "true"   
+

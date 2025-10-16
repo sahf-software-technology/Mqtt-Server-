@@ -1,13 +1,25 @@
 using Microsoft.AspNetCore.SignalR;
 
-namespace RestApiLayer.Hubs
+namespace RestApiLayer.Hubs;
+
+// This hub handles the persistent connection and broadcasting of real-time data to clients.
+// It is strongly typed with IHubContext<PrinterHub> in the MessagingController.
+public class PrinterHub : Hub
 {
-    // The PrinterHub manages the connections between the server and the browser clients.
-    // The C# Controller will use the IHubContext<PrinterHub> to send messages 
-    // to all connected clients (the real-time dashboard).
-    public class PrinterHub : Hub
+    private readonly ILogger<PrinterHub> _logger;
+
+    public PrinterHub(ILogger<PrinterHub> logger)
     {
-        // No methods are explicitly needed here for server-to-client push; 
-        // the hub primarily serves as the connection endpoint (/printerhub).
+        _logger = logger;
     }
+    
+    // Clients can call this method if needed (e.g., to subscribe to a specific printer)
+    public async Task JoinPrinterGroup(string printerId)
+    {
+        await Groups.AddToGroupAsync(Context.ConnectionId, $"Printer-{printerId}");
+        _logger.LogInformation("Client {ConnectionId} joined group for printer {PrinterId}", Context.ConnectionId, printerId);
+    }
+    
+    // The main data broadcasting will be done from the controller using IHubContext.
+    // No additional methods are strictly required here for that functionality.
 }
