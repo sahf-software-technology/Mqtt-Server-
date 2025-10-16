@@ -3,8 +3,8 @@ using Dapr.Client;
 using Microsoft.AspNetCore.Mvc;
 using RestApiLayer.Models;
 using System.Collections.Concurrent;
-using Microsoft.AspNetCore.SignalR; 
-using RestApiLayer.Hubs; 
+using Microsoft.AspNetCore.SignalR;
+using RestApiLayer.Hubs;
 
 namespace RestApiLayer.Controllers;
 
@@ -14,93 +14,70 @@ public class MessagingController : ControllerBase
 {
     private readonly ILogger<MessagingController> _logger;
     private readonly DaprClient _daprClient;
-    private readonly IHubContext<PrinterHub> _hubContext; // SignalR Context
+    private readonly IHubContext<PrinterHub> _hubContext;
     private const string PubSubName = "mqtt-pubsub";
 
-    // In-memory storage for latest telemetry (use Redis/DB in production)
     private static readonly ConcurrentDictionary<string, PrinterTelemetry> LatestTelemetry = new();
     private static readonly ConcurrentDictionary<string, List<PrinterEvent>> PrinterEvents = new();
-    
-    // Assuming you have models for PrintJob, LabEquipmentTelemetry, PublishRequest, and Message
-    // For brevity, using object for unused types here:
-    private static readonly ConcurrentDictionary<string, object> PrintJobs = new(); 
-    private static readonly ConcurrentDictionary<string, object> EquipmentTelemetry = new(); 
+    private static readonly ConcurrentDictionary<string, object> PrintJobs = new();
+    private static readonly ConcurrentDictionary<string, object> EquipmentTelemetry = new();
 
-
-    // Inject IHubContext along with other services
     public MessagingController(ILogger<MessagingController> logger, DaprClient daprClient, IHubContext<PrinterHub> hubContext)
     {
         _logger = logger;
         _daprClient = daprClient;
-        _hubContext = hubContext; // Assign injected context
+        _hubContext = hubContext;
     }
 
-    /// <summary>
-    /// Publish a message to a specific topic
-    /// POST: /messaging/publish
-    /// </summary>
+    // --- PUBLISH ---
+
     [HttpPost("publish")]
     public async Task<IActionResult> PublishMessage([FromBody] PublishRequest request)
     {
-        _logger.LogInformation("Publishing to topic '{Topic}': {Content}", 
-            request.Topic, request.Message.Content);
-
-        // This assumes PublishRequest and Message models are defined.
+        _logger.LogInformation("Publishing to topic '{Topic}': {Content}", request.Topic, request.Message.Content);
         await _daprClient.PublishEventAsync(PubSubName, request.Topic, request.Message);
-        
-        return Ok(new 
-        { 
+        return Ok(new
+        {
             status = "Message published successfully!",
             topic = request.Topic,
-            messageId = request.Message.Id 
+            messageId = request.Message.Id
         });
     }
 
-    /// <summary>
-    /// Subscribe to 3D printer telemetry data
-    /// Topic: university/lab/printer/+/telemetry
-    /// This receives real-time operational data from all printers
-    /// </summary>
-    [Topic(PubSubName, "university/lab/printer/+/telemetry")]
+    // --- SUBSCRIPTIONS ---
+
+    // 🔧 Added Metadata = "rawPayload=true" to accept plain JSON from Dapr without CloudEvent wrapper
+
+    [Topic(PubSubName, "university/lab/printer/+/telemetry", Metadata = "rawPayload=true")]
     [HttpPost("subscribe/printer-telemetry")]
-    public async Task<IActionResult> SubscribeToPrinterTelemetry([FromBody] PrinterTelemetry telemetry) // <-- Added [FromBody]
+    public async Task<IActionResult> SubscribeToPrinterTelemetry([FromBody] PrinterTelemetry telemetry)
     {
         try
         {
             _logger.LogInformation(
                 "🖨️ PRINTER TELEMETRY [{PrinterId}]: Status={Status}, Nozzle={Nozzle}°C, Bed={Bed}°C, Progress={Progress}%, Filament={Filament}g",
-                telemetry.PrinterId, 
+                telemetry.PrinterId,
                 telemetry.Status,
-                telemetry.NozzleTemperature, 
+                telemetry.NozzleTemperature,
                 telemetry.BedTemperature,
                 telemetry.PrintProgress,
                 telemetry.FilamentRemaining
             );
 
-            // 1. Store latest telemetry for REST API polling
             LatestTelemetry[telemetry.PrinterId] = telemetry;
-
-            // 2. Push the update to all connected clients via SignalR
-            // The client (SignalRDashboard.jsx) listens for 'ReceiveTelemetry'
             await _hubContext.Clients.All.SendAsync("ReceiveTelemetry", telemetry);
-            
             return Ok();
         }
         catch (Exception ex)
         {
-            // This catches issues if the Dapr payload couldn't be deserialized into PrinterTelemetry
             _logger.LogError(ex, "🔴 DESERIALIZATION/PROCESSING FAILED for printer telemetry.");
             return StatusCode(500, "Internal server error during telemetry processing.");
         }
     }
 
-    /// <summary>
-    /// Subscribe to 3D printer events (errors, warnings, completions)
-    /// Topic: university/lab/printer/+/events
-    /// </summary>
-    [Topic(PubSubName, "university/lab/printer/+/events")]
+    [Topic(PubSubName, "university/lab/printer/+/events", Metadata = "rawPayload=true")]
     [HttpPost("subscribe/printer-events")]
-    public async Task<IActionResult> SubscribeToPrinterEvents([FromBody] PrinterEvent printerEvent) // <-- Added [FromBody]
+    public async Task<IActionResult> SubscribeToPrinterEvents([FromBody] PrinterEvent printerEvent)
     {
         try
         {
@@ -120,31 +97,23 @@ public class MessagingController : ControllerBase
                 printerEvent.Message
             );
 
-            // Store event history
             if (!PrinterEvents.ContainsKey(printerEvent.PrinterId))
-            {
                 PrinterEvents[printerEvent.PrinterId] = new List<PrinterEvent>();
-            }
-            PrinterEvents[printerEvent.PrinterId].Add(printerEvent);
 
-            // Push the event update to all connected clients via SignalR
-            // The client (SignalRDashboard.jsx) listens for 'ReceiveEvent'
+            PrinterEvents[printerEvent.PrinterId].Add(printerEvent);
             await _hubContext.Clients.All.SendAsync("ReceiveEvent", printerEvent);
-            
             return Ok();
         }
         catch (Exception ex)
         {
-            // This catches issues if the Dapr payload couldn't be deserialized into PrinterEvent
             _logger.LogError(ex, "🔴 DESERIALIZATION/PROCESSING FAILED for printer event.");
             return StatusCode(500, "Internal server error during event processing.");
         }
     }
 
-    // --- Subscriptions for other topics (omitted SignalR updates for brevity) ---
-    [Topic(PubSubName, "university/lab/printer/+/jobs")]
+    [Topic(PubSubName, "university/lab/printer/+/jobs", Metadata = "rawPayload=true")]
     [HttpPost("subscribe/print-jobs")]
-    public IActionResult SubscribeToPrintJobs(PrintJob job)
+    public IActionResult SubscribeToPrintJobs([FromBody] PrintJob job)
     {
         _logger.LogInformation(
             "📋 PRINT JOB [{JobId}] on {PrinterId}: {FileName} - Status: {Status}",
@@ -157,9 +126,9 @@ public class MessagingController : ControllerBase
         return Ok();
     }
 
-    [Topic(PubSubName, "university/lab/equipment/+/telemetry")]
+    [Topic(PubSubName, "university/lab/equipment/+/telemetry", Metadata = "rawPayload=true")]
     [HttpPost("subscribe/equipment-telemetry")]
-    public IActionResult SubscribeToEquipmentTelemetry(LabEquipmentTelemetry equipment)
+    public IActionResult SubscribeToEquipmentTelemetry([FromBody] LabEquipmentTelemetry equipment)
     {
         _logger.LogInformation(
             "🔧 EQUIPMENT TELEMETRY [{EquipmentId}] {EquipmentType}: Status={Status}",
@@ -170,28 +139,18 @@ public class MessagingController : ControllerBase
         EquipmentTelemetry[equipment.EquipmentId] = equipment;
         return Ok();
     }
-    
-    // --- REST Endpoints (for polling) ---
 
-    /// <summary>
-    /// Send command to a specific 3D printer
-    /// POST: /messaging/printer/{printerId}/command
-    /// </summary>
+    // --- COMMANDS / REST ACCESS ---
+
     [HttpPost("printer/{printerId}/command")]
     public async Task<IActionResult> SendPrinterCommand(string printerId, [FromBody] PrinterCommand command)
     {
         var topic = $"university/lab/printer/{printerId}/commands";
-        
-        _logger.LogInformation(
-            "🎮 Sending command '{Action}' to printer {PrinterId}",
-            command.Action, 
-            printerId
-        );
-
+        _logger.LogInformation("🎮 Sending command '{Action}' to printer {PrinterId}", command.Action, printerId);
         await _daprClient.PublishEventAsync(PubSubName, topic, command);
-        
-        return Ok(new 
-        { 
+
+        return Ok(new
+        {
             status = "Command sent successfully!",
             printerId,
             topic,
@@ -203,10 +162,7 @@ public class MessagingController : ControllerBase
     public IActionResult GetPrinterTelemetry(string printerId)
     {
         if (LatestTelemetry.TryGetValue(printerId, out var telemetry))
-        {
             return Ok(telemetry);
-        }
-        
         return NotFound(new { message = $"No telemetry data found for printer {printerId}" });
     }
 
@@ -240,19 +196,19 @@ public class MessagingController : ControllerBase
             var recentEvents = events.OrderByDescending(e => e.Timestamp).Take(limit);
             return Ok(recentEvents);
         }
-        
+
         return Ok(new List<PrinterEvent>());
     }
 
     [HttpGet("health")]
     public IActionResult Health()
     {
-        return Ok(new 
-        { 
+        return Ok(new
+        {
             status = "healthy",
             pubSubName = PubSubName,
-            subscribedTopics = new[] 
-            { 
+            subscribedTopics = new[]
+            {
                 "university/lab/printer/+/telemetry",
                 "university/lab/printer/+/events",
                 "university/lab/printer/+/jobs",
@@ -264,8 +220,7 @@ public class MessagingController : ControllerBase
     }
 }
 
-// NOTE: Placeholder models needed for the controller to compile. 
-// You should define these fully in your Models folder:
+// --- Placeholder Models (define properly in your Models folder) ---
 public record PrintJob(string JobId, string PrinterId, string FileName, string Status);
 public record LabEquipmentTelemetry(string EquipmentId, string EquipmentType, string Status);
 public record PrinterCommand(string Action, string Value);
