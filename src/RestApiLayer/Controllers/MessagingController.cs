@@ -63,26 +63,35 @@ public class MessagingController : ControllerBase
     /// </summary>
     [Topic(PubSubName, "university/lab/printer/+/telemetry")]
     [HttpPost("subscribe/printer-telemetry")]
-    public async Task<IActionResult> SubscribeToPrinterTelemetry(PrinterTelemetry telemetry)
+    public async Task<IActionResult> SubscribeToPrinterTelemetry([FromBody] PrinterTelemetry telemetry) // <-- Added [FromBody]
     {
-        _logger.LogInformation(
-            "🖨️ PRINTER TELEMETRY [{PrinterId}]: Status={Status}, Nozzle={Nozzle}°C, Bed={Bed}°C, Progress={Progress}%, Filament={Filament}g",
-            telemetry.PrinterId, 
-            telemetry.Status,
-            telemetry.NozzleTemperature, 
-            telemetry.BedTemperature,
-            telemetry.PrintProgress,
-            telemetry.FilamentRemaining
-        );
+        try
+        {
+            _logger.LogInformation(
+                "🖨️ PRINTER TELEMETRY [{PrinterId}]: Status={Status}, Nozzle={Nozzle}°C, Bed={Bed}°C, Progress={Progress}%, Filament={Filament}g",
+                telemetry.PrinterId, 
+                telemetry.Status,
+                telemetry.NozzleTemperature, 
+                telemetry.BedTemperature,
+                telemetry.PrintProgress,
+                telemetry.FilamentRemaining
+            );
 
-        // 1. Store latest telemetry for REST API polling
-        LatestTelemetry[telemetry.PrinterId] = telemetry;
+            // 1. Store latest telemetry for REST API polling
+            LatestTelemetry[telemetry.PrinterId] = telemetry;
 
-        // 2. Push the update to all connected clients via SignalR
-        // The client (SignalRDashboard.jsx) listens for 'ReceiveTelemetry'
-        await _hubContext.Clients.All.SendAsync("ReceiveTelemetry", telemetry);
-
-        return Ok();
+            // 2. Push the update to all connected clients via SignalR
+            // The client (SignalRDashboard.jsx) listens for 'ReceiveTelemetry'
+            await _hubContext.Clients.All.SendAsync("ReceiveTelemetry", telemetry);
+            
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            // This catches issues if the Dapr payload couldn't be deserialized into PrinterTelemetry
+            _logger.LogError(ex, "🔴 DESERIALIZATION/PROCESSING FAILED for printer telemetry.");
+            return StatusCode(500, "Internal server error during telemetry processing.");
+        }
     }
 
     /// <summary>
@@ -91,36 +100,45 @@ public class MessagingController : ControllerBase
     /// </summary>
     [Topic(PubSubName, "university/lab/printer/+/events")]
     [HttpPost("subscribe/printer-events")]
-    public async Task<IActionResult> SubscribeToPrinterEvents(PrinterEvent printerEvent)
+    public async Task<IActionResult> SubscribeToPrinterEvents([FromBody] PrinterEvent printerEvent) // <-- Added [FromBody]
     {
-        var emoji = printerEvent.EventType switch
+        try
         {
-            "error" => "❌",
-            "warning" => "⚠️",
-            "completed" => "✅",
-            _ => "ℹ️"
-        };
+            var emoji = printerEvent.EventType switch
+            {
+                "error" => "❌",
+                "warning" => "⚠️",
+                "completed" => "✅",
+                _ => "ℹ️"
+            };
 
-        _logger.LogInformation(
-            "{Emoji} PRINTER EVENT [{PrinterId}]: {EventType} - {Message}",
-            emoji,
-            printerEvent.PrinterId,
-            printerEvent.EventType,
-            printerEvent.Message
-        );
+            _logger.LogInformation(
+                "{Emoji} PRINTER EVENT [{PrinterId}]: {EventType} - {Message}",
+                emoji,
+                printerEvent.PrinterId,
+                printerEvent.EventType,
+                printerEvent.Message
+            );
 
-        // Store event history
-        if (!PrinterEvents.ContainsKey(printerEvent.PrinterId))
-        {
-            PrinterEvents[printerEvent.PrinterId] = new List<PrinterEvent>();
+            // Store event history
+            if (!PrinterEvents.ContainsKey(printerEvent.PrinterId))
+            {
+                PrinterEvents[printerEvent.PrinterId] = new List<PrinterEvent>();
+            }
+            PrinterEvents[printerEvent.PrinterId].Add(printerEvent);
+
+            // Push the event update to all connected clients via SignalR
+            // The client (SignalRDashboard.jsx) listens for 'ReceiveEvent'
+            await _hubContext.Clients.All.SendAsync("ReceiveEvent", printerEvent);
+            
+            return Ok();
         }
-        PrinterEvents[printerEvent.PrinterId].Add(printerEvent);
-
-        // Push the event update to all connected clients via SignalR
-        // The client (SignalRDashboard.jsx) listens for 'ReceiveEvent'
-        await _hubContext.Clients.All.SendAsync("ReceiveEvent", printerEvent);
-        
-        return Ok();
+        catch (Exception ex)
+        {
+            // This catches issues if the Dapr payload couldn't be deserialized into PrinterEvent
+            _logger.LogError(ex, "🔴 DESERIALIZATION/PROCESSING FAILED for printer event.");
+            return StatusCode(500, "Internal server error during event processing.");
+        }
     }
 
     // --- Subscriptions for other topics (omitted SignalR updates for brevity) ---
