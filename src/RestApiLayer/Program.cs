@@ -18,21 +18,24 @@ builder.Services.AddSwaggerGen(c =>
 // Register Dapr client
 builder.Services.AddDaprClient();
 
-// --- START: SignalR Service Registration (Fix for InvalidOperationException) ---
-// This registers the necessary SignalR services for IHubContext injection.
+// --- START: SignalR Service Registration ---
+// This registers the necessary SignalR services.
 builder.Services.AddSignalR();
 // --- END: SignalR Service Registration ---
 
-// Add CORS if you need it for a frontend
+// Add CORS policy
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        // Allow the React/HTML frontend (running on a different port/origin) to connect
-        // Note: For production, specify exact origins instead of AllowAnyOrigin()
-        policy.AllowAnyOrigin()
+        // --- START: CRITICAL CORS FIX FOR SignalR ---
+        // SignalR requires credentials (AllowCredentials) which conflicts with a simple AllowAnyOrigin().
+        // We use SetIsOriginAllowed to effectively allow all origins while satisfying the security requirement.
+        policy.SetIsOriginAllowed(_ => true) // Allows any origin
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials(); // REQUIRED by SignalR for client negotiation
+        // --- END: CRITICAL CORS FIX FOR SignalR ---
     });
 });
 
@@ -51,7 +54,7 @@ app.UseCloudEvents();
 // Map your controllers
 app.MapControllers();
 
-// --- START: SignalR Hub Endpoint Mapping (Fix for InvalidOperationException) ---
+// --- START: SignalR Hub Endpoint Mapping ---
 // This maps the hub to the endpoint the frontend is configured to use: /printerhub
 app.MapHub<RestApiLayer.Hubs.PrinterHub>("/printerhub");
 // --- END: SignalR Hub Endpoint Mapping ---
