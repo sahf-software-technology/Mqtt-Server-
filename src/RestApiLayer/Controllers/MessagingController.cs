@@ -44,11 +44,9 @@ public class MessagingController : ControllerBase
         });
     }
 
-    // --- SUBSCRIPTIONS ---
+    // --- SUBSCRIPTIONS (rawPayload already handled in mqtt-pubsub.yaml) ---
 
-    // 🔧 Added Metadata = "rawPayload=true" to accept plain JSON from Dapr without CloudEvent wrapper
-
-    [Topic(PubSubName, "university/lab/printer/+/telemetry", Metadata = "rawPayload=true")]
+    [Topic(PubSubName, "university/lab/printer/+/telemetry")]
     [HttpPost("subscribe/printer-telemetry")]
     public async Task<IActionResult> SubscribeToPrinterTelemetry([FromBody] PrinterTelemetry telemetry)
     {
@@ -75,7 +73,7 @@ public class MessagingController : ControllerBase
         }
     }
 
-    [Topic(PubSubName, "university/lab/printer/+/events", Metadata = "rawPayload=true")]
+    [Topic(PubSubName, "university/lab/printer/+/events")]
     [HttpPost("subscribe/printer-events")]
     public async Task<IActionResult> SubscribeToPrinterEvents([FromBody] PrinterEvent printerEvent)
     {
@@ -111,7 +109,7 @@ public class MessagingController : ControllerBase
         }
     }
 
-    [Topic(PubSubName, "university/lab/printer/+/jobs", Metadata = "rawPayload=true")]
+    [Topic(PubSubName, "university/lab/printer/+/jobs")]
     [HttpPost("subscribe/print-jobs")]
     public IActionResult SubscribeToPrintJobs([FromBody] PrintJob job)
     {
@@ -126,7 +124,7 @@ public class MessagingController : ControllerBase
         return Ok();
     }
 
-    [Topic(PubSubName, "university/lab/equipment/+/telemetry", Metadata = "rawPayload=true")]
+    [Topic(PubSubName, "university/lab/equipment/+/telemetry")]
     [HttpPost("subscribe/equipment-telemetry")]
     public IActionResult SubscribeToEquipmentTelemetry([FromBody] LabEquipmentTelemetry equipment)
     {
